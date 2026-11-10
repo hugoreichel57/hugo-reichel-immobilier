@@ -38,7 +38,12 @@ h1{font-size:25px;line-height:1.15;margin:0 0 9px;letter-spacing:-.35px}
 .contact a{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;padding:10px 0;border-bottom:1px solid #292929;font-size:14px;overflow-wrap:anywhere}
 .contact a:last-child{border-bottom:0}
 .contact svg{width:19px;height:19px;stroke:var(--orange);fill:none;stroke-width:1.9;flex:0 0 19px}
-.footer{text-align:center;color:#777;font-size:11px;margin-top:22px}
+.footer{text-align:center;color:#777;font-size:11px;margin-top:22px;line-height:1.6}
+.footer .legal{display:block;margin-top:6px;color:#666;font-size:10.5px}
+.head-row{display:flex;align-items:center;gap:16px}
+.photo{width:78px;height:78px;flex:0 0 78px;border-radius:50%;object-fit:cover;border:3px solid var(--orange);box-shadow:0 6px 20px rgba(255,106,0,.25);background:#1d1d1d}
+.card.review{background:transparent;color:#fff;border:1px solid var(--line);box-shadow:none;min-height:70px}
+.card.review .copy small{color:var(--muted)}
 @media (min-width:700px){main{padding-top:48px}}
 </style>
 </head>
@@ -46,10 +51,13 @@ h1{font-size:25px;line-height:1.15;margin:0 0 9px;letter-spacing:-.35px}
 <div class="shell">
 <main>
 <div class="accent"></div>
-<header>
-  <div class="name">HUGO <span>REICHEL</span></div>
-  <div class="role">Conseiller immobilier indépendant</div>
-  <div class="brand"><span class="op">optim</span>home</div>
+<header class="head-row">
+  <img class="photo" src="photo.jpg" alt="Hugo Reichel, conseiller immobilier" onerror="this.remove()">
+  <div>
+    <div class="name">HUGO <span>REICHEL</span></div>
+    <div class="role">Conseiller immobilier indépendant</div>
+    <div class="brand"><span class="op">optim</span>home</div>
+  </div>
 </header>
 
 <div class="rule"></div>
@@ -69,12 +77,6 @@ h1{font-size:25px;line-height:1.15;margin:0 0 9px;letter-spacing:-.35px}
   <div class="chev">›</div>
 </a>
 
-<a class="card" href="https://g.page/r/Celxncfysop1ECE/review" target="_blank" rel="noopener noreferrer">
-  <div class="icon"><svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 7 .9-5.1 4.9 1.2 7-6.2-3.3-6.2 3.3 1.2-7L1.9 9.2l7-.9z"/></svg></div>
-  <div class="copy"><strong>Laisser un avis Google</strong><small>Partagez votre expérience et donnez votre avis.</small></div>
-  <div class="chev">›</div>
-</a>
-
 <a class="card" href="#contact">
   <div class="icon"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg></div>
   <div class="copy"><strong>Me contacter</strong><small>Téléphone, e-mail et espace Optimhome.</small></div>
@@ -89,7 +91,17 @@ h1{font-size:25px;line-height:1.15;margin:0 0 9px;letter-spacing:-.35px}
   <a href="https://hugo-reichel.optimhome.com/fr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>Voir mon espace Optimhome</a>
 </section>
 
-<div class="footer">Hugo Reichel · Optimhome</div>
+<section class="actions" style="margin-top:22px">
+<a class="card review" href="https://g.page/r/Celxncfysop1ECE/review" target="_blank" rel="noopener noreferrer">
+  <div class="icon"><svg viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 7 .9-5.1 4.9 1.2 7-6.2-3.3-6.2 3.3 1.2-7L1.9 9.2l7-.9z"/></svg></div>
+  <div class="copy"><strong>Déjà client&nbsp;? Laissez un avis</strong><small>Votre retour sur Google m’aide beaucoup.</small></div>
+  <div class="chev">›</div>
+</a>
+</section>
+
+<div class="footer">Hugo Reichel · Optimhome
+  <span class="legal">Agent commercial (EI) immatriculé au RSAC de Thionville n°&nbsp;103&nbsp;104&nbsp;824 · Mandataire du réseau Optimhome</span>
+</div>
 </main>
 </div>
 </body>
