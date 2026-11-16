@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>Confiez-moi votre recherche — Hugo Reichel</title>
+<meta name="description" content="Vous cherchez une maison ou un appartement ? Confiez votre recherche à Hugo Reichel, conseiller immobilier Optimhome.">
+<style>
+:root{--bg:#0a0a0a;--panel:#151515;--panel2:#1d1d1d;--text:#fff;--muted:#a9a9a9;--orange:#ff6a00;--line:#2b2b2b}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.shell{min-height:100svh;display:flex;justify-content:center;background:
+radial-gradient(circle at 88% 8%,rgba(255,106,0,.14),transparent 28%),
+linear-gradient(160deg,#090909 0%,#111 70%,#160a03 100%)}
+main{width:100%;max-width:480px;padding:28px 20px 34px;position:relative;overflow:hidden}
+.accent{position:absolute;top:-25px;right:-62px;width:190px;height:190px;transform:rotate(24deg);opacity:.7;background:repeating-linear-gradient(90deg,transparent 0 22px,var(--orange) 23px 26px,transparent 27px 39px);pointer-events:none}
+.back{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;margin-bottom:18px;padding:6px 0}
+.back:hover{color:#fff}
+header{position:relative;z-index:1}
+.head-row{display:flex;align-items:center;gap:16px}
+.photo{width:64px;height:64px;flex:0 0 64px;border-radius:50%;object-fit:cover;border:3px solid var(--orange);background:#1d1d1d}
+.name{font-size:28px;line-height:1;font-weight:900;letter-spacing:-.6px;margin:2px 0 6px}
+.name span{color:var(--orange)}
+.role{font-size:13px;color:#cfcfcf}
+.rule{width:65px;height:4px;background:var(--orange);border-radius:99px;margin:22px 0 24px}
+h1{font-size:27px;line-height:1.15;margin:0 0 10px;letter-spacing:-.4px}
+.lead{margin:0 0 16px;color:#d0d0d0;font-size:15px;line-height:1.55}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,106,0,.12);border:1px solid rgba(255,106,0,.45);color:#fff;border-radius:99px;padding:8px 14px;font-size:13px;font-weight:700}
+.badge svg{width:16px;height:16px;stroke:var(--orange);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.steps{margin:26px 0 8px;display:grid;gap:10px;counter-reset:s}
+.step{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.step::before{counter-increment:s;content:counter(s);flex:0 0 30px;height:30px;border-radius:50%;background:var(--orange);color:#111;font-weight:900;display:grid;place-items:center;font-size:15px}
+.step strong{display:block;font-size:15px;margin-bottom:3px}
+.step span{color:var(--muted);font-size:13px;line-height:1.45}
+.section-title{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--orange);margin:28px 0 12px}
+form{background:#fff;color:#111;border-radius:20px;padding:20px 16px;box-shadow:0 8px 28px rgba(0,0,0,.22)}
+fieldset{border:0;margin:0 0 16px;padding:0}
+legend,label.lbl{display:block;font-size:13px;font-weight:800;margin-bottom:7px;color:#222}
+.opt{font-weight:500;color:#777}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{position:relative}
+.chips input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chips span{display:inline-block;padding:10px 14px;border:1.5px solid #d6d6d6;border-radius:99px;font-size:14px;font-weight:600;color:#333;min-height:44px;line-height:22px}
+.chips input:checked+span{background:#111;border-color:#111;color:#fff}
+.chips input:focus-visible+span{outline:3px solid var(--orange);outline-offset:2px}
+.field{margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input[type=text],input[type=tel],input[type=email],input[type=number],select,textarea{width:100%;font:inherit;font-size:16px;color:#111;background:#f5f5f5;border:1.5px solid #e2e2e2;border-radius:12px;padding:12px 13px;min-height:48px}
+textarea{min-height:92px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);background:#fff}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#555;line-height:1.45;margin:4px 0 18px}
+.consent input{width:22px;height:22px;flex:0 0 22px;margin:0;accent-color:var(--orange)}
+.submit{width:100%;border:0;border-radius:14px;background:var(--orange);color:#111;font:inherit;font-size:16px;font-weight:900;padding:16px;min-height:54px;cursor:pointer}
+.submit:active{transform:scale(.99)}
+.hint{font-size:12px;color:#777;text-align:center;margin:10px 0 0;line-height:1.45}
+.error{display:none;background:#fff1e8;border:1px solid #ffb98a;color:#8a3500;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.call{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;border:1px solid var(--line);background:rgba(20,20,20,.86);border-radius:16px;padding:15px;color:#fff;text-decoration:none;font-weight:800;font-size:15px;min-height:54px}
+.call svg{width:20px;height:20px;stroke:var(--orange);fill:none;stroke-width:1.9}
+.note{color:var(--muted);font-size:12px;line-height:1.5;margin:18px 2px 0}
+.footer{text-align:center;color:#777;font-size:11px;margin-top:22px;line-height:1.6}
+.footer .legal{display:block;margin-top:6px;color:#666;font-size:10.5px}
+@media (min-width:700px){main{padding-top:48px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<main>
+<div class="accent"></div>
+<a class="back" href="./">‹ Retour</a>
+<header class="head-row">
+  <img class="photo" src="photo.jpg" alt="Hugo Reichel, conseiller immobilier" onerror="this.remove()">
+  <div>
+    <div class="name">HUGO <span>REICHEL</span></div>
+    <div class="role">Conseiller immobilier indépendant · Optimhome</div>
+  </div>
+</header>
+
+<div class="rule"></div>
+<h1>Confiez-moi votre recherche immobilière</h1>
+<p class="lead">Vous cherchez une maison ou un appartement&nbsp;? Décrivez-moi votre projet&nbsp;: je recherche pour vous les biens qui correspondent vraiment à vos critères, et vous faites gagner du temps à votre projet.</p>
+<div class="badge"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Sans frais supplémentaires de ma part</div>
+
+<div class="steps">
+  <div class="step"><div><strong>Vous me décrivez votre projet</strong><span>En 2 minutes avec le formulaire ci-dessous.</span></div></div>
+  <div class="step"><div><strong>On en parle ensemble</strong><span>Je vous rappelle pour affiner vos critères et vous présenter le mandat de recherche.</span></div></div>
+  <div class="step"><div><strong>Je vous propose des biens ciblés</strong><span>Vous ne visitez que ce qui correspond à votre recherche.</span></div></div>
+</div>
+
+<div class="section-title">VOTRE RECHERCHE</div>
+<form id="f" novalidate>
+  <div class="error" id="err" role="alert"></div>
+
+  <fieldset>
+    <legend>Type de bien</legend>
+    <div class="chips">
+      <label><input type="checkbox" name="type" value="Maison"><span>Maison</span></label>
+      <label><input type="checkbox" name="type" value="Appartement"><span>Appartement</span></label>
+    </div>
+  </fieldset>
+
+  <div class="field">
+    <label class="lbl" for="secteur">Secteur recherché</label>
+    <input type="text" id="secteur" name="secteur" placeholder="Ex. : Thionville, Yutz, Terville…" autocomplete="off">
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label class="lbl" for="budget">Budget max (€)</label>
+      <input type="number" id="budget" name="budget" inputmode="numeric" min="0" step="1000" placeholder="250000">
+    </div>
+    <div class="field">
+      <label class="lbl" for="surface">Surface min (m²)</label>
+      <input type="number" id="surface" name="surface" inputmode="numeric" min="0" placeholder="90">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label class="lbl" for="chambres">Chambres min</label>
+      <select id="chambres" name="chambres">
+        <option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5 et +</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="lbl" for="delai">Délai</label>
+      <select id="delai" name="delai">
+        <option value="">—</option><option>Dès que possible</option><option>Dans les 3 mois</option><option>Dans les 6 mois</option><option>Plus tard / je me renseigne</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="lbl" for="financement">Votre financement</label>
+    <select id="financement" name="financement">
+      <option value="">—</option><option>Accord de principe de la banque obtenu</option><option>Demande de prêt en cours</option><option>Pas encore commencé</option><option>Achat sans crédit</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="lbl" for="criteres">Ce qui compte pour vous <span class="opt">(facultatif)</span></label>
+    <textarea id="criteres" name="criteres" placeholder="Jardin, garage, proche des écoles, sans travaux, plain-pied…"></textarea>
+  </div>
+
+  <div class="section-title" style="margin-top:6px;color:#111">VOS COORDONNÉES</div>
+
+  <div class="field">
+    <label class="lbl" for="nom">Nom et prénom</label>
+    <input type="text" id="nom" name="nom" autocomplete="name" required>
+  </div>
+  <div class="row">
+    <div class="field">
+      <label class="lbl" for="tel">Téléphone</label>
+      <input type="tel" id="tel" name="tel" autocomplete="tel" inputmode="tel" required>
+    </div>
+    <div class="field">
+      <label class="lbl" for="email">E-mail <span class="opt">(facultatif)</span></label>
+      <input type="email" id="email" name="email" autocomplete="email">
+    </div>
+  </div>
+
+  <label class="consent">
+    <input type="checkbox" id="rgpd" required>
+    <span>J’accepte que Hugo Reichel utilise ces informations uniquement pour traiter ma recherche et me recontacter. Elles ne sont transmises à aucun tiers et sont supprimées sur simple demande.</span>
+  </label>
+
+  <button class="submit" type="submit">Envoyer ma recherche</button>
+  <p class="hint">Votre application e-mail va s’ouvrir avec votre demande déjà rédigée&nbsp;: il ne reste qu’à l’envoyer.</p>
+</form>
+
+<a class="call" href="tel:+33689170118"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>Je préfère appeler : 06 89 17 01 18</a>
+
+<p class="note">Aucuns frais supplémentaires ne vous sont demandés par moi&nbsp;: ma rémunération est prévue dans les honoraires de l’agence en charge de la vente. Les conditions sont détaillées dans le mandat de recherche, signé avant le début des recherches.</p>
+
+<div class="footer">Hugo Reichel · Optimhome
+  <span class="legal">Agent commercial (EI) immatriculé au RSAC de Thionville n°&nbsp;103&nbsp;104&nbsp;824 · Mandataire du réseau Optimhome</span>
+</div>
+</main>
+</div>
+<script>
+(function(){
+  var f=document.getElementById('f'), err=document.getElementById('err');
+  function v(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    var types=[].slice.call(f.querySelectorAll('input[name=type]:checked')).map(function(i){return i.value;});
+    var miss=[];
+    if(!v('nom'))miss.push('votre nom');
+    if(!v('tel'))miss.push('votre téléphone');
+    if(!document.getElementById('rgpd').checked)miss.push('votre accord pour l’utilisation de vos informations');
+    if(miss.length){err.textContent='Merci de compléter : '+miss.join(', ')+'.';err.style.display='block';err.scrollIntoView({behavior:'smooth',block:'center'});return;}
+    err.style.display='none';
+    var lines=[
+      'Bonjour Hugo,','','Je souhaite vous confier ma recherche immobilière :','',
+      'Type de bien : '+(types.join(' / ')||'—'),
+      'Secteur : '+(v('secteur')||'—'),
+      'Budget max : '+(v('budget')?Number(v('budget')).toLocaleString('fr-FR')+' €':'—'),
+      'Surface min : '+(v('surface')?v('surface')+' m²':'—'),
+      'Chambres min : '+(v('chambres')||'—'),
+      'Délai : '+(v('delai')||'—'),
+      'Financement : '+(v('financement')||'—'),
+      'Critères : '+(v('criteres')||'—'),'',
+      'Nom : '+v('nom'),
+      'Téléphone : '+v('tel'),
+      'E-mail : '+(v('email')||'—'),'',
+      'J’accepte que ces informations soient utilisées pour traiter ma recherche.'
+    ];
+    var subject='Recherche immobilière – '+v('nom');
+    window.location.href='mailto:hugo.reichel@optimhome.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+  });
+})();
+</script>
+</body>
+</html>
