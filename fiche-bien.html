@@ -52,6 +52,15 @@ a{color:#ffb27a}
 .foot{color:#666;font-size:11px;text-align:center;margin-top:20px;line-height:1.6}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #555;border-top-color:var(--orange);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.facs{margin-top:12px;display:grid;gap:8px}
+.fac{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:14px}
+.fac svg{flex:0 0 26px;width:26px;height:26px;background:#111;border-radius:50%}
+.fac .fx{flex:1;line-height:1.35}
+.fac .o{color:var(--orange)}
+.fac.mit{opacity:.75}
+.fac.mit .o{color:#bbb}
+.fac .deg{color:#8a8a8a;font-size:12px}
+.fac .fl{font-weight:800;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -233,21 +242,35 @@ function getDPE(lon,lat){
   return getJSON('https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=20&sort=-date_etablissement_dpe&select='+sel+'&geo_distance='+lon+','+lat+',30').then(function(j){return j.results||[]});
 }
 
+function angDiff(a,b){var d=Math.abs(((a-b)%360+540)%360-180);return d}
+function norm360(a){return ((a%360)+360)%360}
 function computeExpo(main,all,parcelL,inParcel){
   var others=all.filter(function(b){return b!==main});
-  var free=[0,0,0,0,0,0,0,0], mit=[0,0,0,0,0,0,0,0];
+  var free=[0,0,0,0,0,0,0,0], mit=[0,0,0,0,0,0,0,0], edges=[];
   main.L.forEach(function(rings){
     var r=rings[0].slice(); if(ringArea(r)<0)r.reverse(); // sens anti-horaire
     for(var i=0,n=r.length;i<n;i++){
       var a=r[i],b=r[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.sqrt(dx*dx+dy*dy);
-      if(L<1)continue;
+      if(L<0.3)continue;
       var nx=dy/L, ny=-dx/L; // normale extérieure
-      var az=Math.atan2(nx,ny)*180/Math.PI;
+      var az=norm360(Math.atan2(nx,ny)*180/Math.PI);
       var mx=(a[0]+b[0])/2+nx*0.8, my=(a[1]+b[1])/2+ny*0.8;
       var touch=others.some(function(o){return inMulti([mx,my],o.L)});
-      (touch?mit:free)[sectorOf(az)]+=L;
+      if(L>=1)(touch?mit:free)[sectorOf(az)]+=L;
+      edges.push({az:az,L:L,mit:touch});
     }
   });
+  // Regroupement des murs en façades (même orientation à 20° près, même statut)
+  var fac=[];
+  edges.forEach(function(e){
+    var last=fac[fac.length-1];
+    if(last&&last.mit===e.mit&&angDiff(last.az,e.az)<20){
+      var x=Math.sin(last.az*Math.PI/180)*last.L+Math.sin(e.az*Math.PI/180)*e.L, y=Math.cos(last.az*Math.PI/180)*last.L+Math.cos(e.az*Math.PI/180)*e.L;
+      last.az=norm360(Math.atan2(x,y)*180/Math.PI); last.L+=e.L;
+    } else fac.push({az:e.az,L:e.L,mit:e.mit});
+  });
+  if(fac.length>1){var f0=fac[0],fl=fac[fac.length-1];if(f0.mit===fl.mit&&angDiff(f0.az,fl.az)<20){var x=Math.sin(f0.az*Math.PI/180)*f0.L+Math.sin(fl.az*Math.PI/180)*fl.L,y=Math.cos(f0.az*Math.PI/180)*f0.L+Math.cos(fl.az*Math.PI/180)*fl.L;f0.az=norm360(Math.atan2(x,y)*180/Math.PI);f0.L+=fl.L;fac.pop()}}
+  fac=fac.filter(function(f){return f.L>=2});
   // Côté jardin : échantillonnage du terrain libre
   var garden=null;
   if(parcelL.length){
@@ -261,11 +284,24 @@ function computeExpo(main,all,parcelL,inParcel){
     var freeArea=n*cell;
     if(n&&freeArea>main.area*0.5&&freeArea>40){
       var gx=sx/n-main.c[0], gy=sy/n-main.c[1], d=Math.sqrt(gx*gx+gy*gy);
-      if(d>2) garden={az:Math.atan2(gx,gy)*180/Math.PI, area:freeArea};
+      if(d>2) garden={az:norm360(Math.atan2(gx,gy)*180/Math.PI), area:freeArea};
     }
   }
+  // Repérage côté rue (le point d'adresse est en général devant la maison) et côté jardin
+  var freeF=fac.filter(function(f){return !f.mit&&f.L>=3});
+  var cx=main.c[0], cy=main.c[1], dRue=Math.sqrt(cx*cx+cy*cy);
+  if(dRue>3&&!inMulti([0,0],main.L)&&freeF.length){
+    var azRue=norm360(Math.atan2(-cx,-cy)*180/Math.PI);
+    var fr=freeF.slice().sort(function(a,b){return angDiff(a.az,azRue)-angDiff(b.az,azRue)})[0];
+    if(angDiff(fr.az,azRue)<70)fr.role='Côté rue';
+  }
+  if(garden&&freeF.length){
+    var fg=freeF.filter(function(f){return !f.role}).sort(function(a,b){return angDiff(a.az,garden.az)-angDiff(b.az,garden.az)})[0];
+    if(fg&&angDiff(fg.az,garden.az)<70)fg.role='Côté jardin';
+  }
+  fac.sort(function(a,b){return (a.mit-b.mit)||(b.L-a.L)});
   var totFree=free.reduce(function(s,v){return s+v},0), totMit=mit.reduce(function(s,v){return s+v},0);
-  return {free:free,mit:mit,totFree:totFree,totMit:totMit,garden:garden};
+  return {free:free,mit:mit,totFree:totFree,totMit:totMit,garden:garden,fac:fac};
 }
 
 /* ---------- Affichage ---------- */
@@ -303,21 +339,25 @@ function render(label,banId,lon,lat,parcel,parcelL,main,inParcel,expo,dpe){
   h+='</div>';
 
   // Exposition
-  h+='<div class="card"><h2>Exposition estimée</h2>';
-  if(expo&&expo.totFree>0){
-    var order=expo.free.map(function(v,i){return {i:i,v:v}}).filter(function(o){return o.v>0}).sort(function(a,b){return b.v-a.v});
-    var main2=order.filter(function(o){return o.v>=expo.totFree*0.2}).map(function(o){return SECT[o.i]});
-    var mitS=expo.mit.map(function(v,i){return {i:i,v:v}}).filter(function(o){return o.v>=2}).map(function(o){return SECT[o.i]});
-    var txt='Façades dégagées : <b>'+esc(main2.join(', '))+'</b>';
-    if(mitS.length)txt+='<br>Mitoyen côté : '+esc(mitS.join(', '));
-    if(expo.garden)txt+='<br>Terrain libre plutôt côté <b>'+esc(SECT[sectorOf(expo.garden.az)])+'</b> (≈ '+fmt(expo.garden.area)+' m²)';
-    h+='<div class="expo">'+rose(expo)+'<div class="txt">'+txt+'</div></div>';
-    h+='<div class="warn">Calcul géométrique d’après la forme du bâtiment : il indique l’orientation des murs, pas l’emplacement des fenêtres ni les ombres. Pour un appartement, l’exposition dépend du logement. La vraie orientation des fenêtres figure dans le DPE complet (lien ci-dessous). À confirmer sur place.</div>';
+  h+='<div class="card"><h2>Exposition par façade (estimée)</h2>';
+  if(expo&&expo.fac&&expo.fac.length){
+    h+='<div class="expo">'+rose(expo)+'<div class="txt">';
+    if(expo.garden)h+='Terrain libre plutôt côté <b>'+esc(SECT[sectorOf(expo.garden.az)])+'</b><br><span style="color:#8a8a8a;font-size:12.5px">≈ '+fmt(expo.garden.area)+' m² non bâtis sur la parcelle</span>';
+    else h+='<span style="color:#cfcfcf">Orange : façades dégagées<br>Gris : murs mitoyens</span>';
+    h+='</div></div><div class="facs">';
+    expo.fac.forEach(function(f){
+      var dir=SECT[sectorOf(f.az)];
+      h+='<div class="fac'+(f.mit?' mit':'')+'"><svg viewBox="-12 -12 24 24" aria-hidden="true"><g transform="rotate('+Math.round(f.az)+')"><path d="M0 -9 L5 2 L0 -1 L-5 2 Z" fill="'+(f.mit?'#777':'#ff6a00')+'"/></g></svg>'+
+         '<div class="fx"><b>'+(f.mit?'Mur mitoyen':(f.role?esc(f.role):'Façade'))+'</b> · orientée <b class="o">'+esc(dir)+'</b> <span class="deg">('+Math.round(f.az/5)*5+'°)</span></div>'+
+         '<div class="fl">'+fmt(f.L,f.L<10?1:0)+' m</div></div>';
+    });
+    h+='</div>';
+    h+='<div class="warn">Calcul d’après le plan du bâtiment : l’orientation de chaque mur est fiable, mais pas l’emplacement des fenêtres ni les ombres des voisins. « Côté rue » et « côté jardin » sont déduits automatiquement : vérifiez sur la carte. Pour un appartement, l’exposition dépend du logement. L’orientation exacte des fenêtres figure dans le DPE complet.</div>';
   } else h+='<p class="sub" style="margin:0">Exposition non calculable ici (bâtiment introuvable).</p>';
   h+='</div>';
 
   // DPE
-  h+='<div class="card"><h2>DPE à proximité (30 m)</h2>';
+  h+='<div class="card"><h2>DPE réalisés à proximité (30 m)</h2><p class="hint" style="margin:-4px 0 10px">DPE officiels transmis à l’ADEME depuis juillet 2021. Les logements voisins apparaissent aussi : vérifiez l’adresse et le complément (étage, porte).</p>';
   if(dpe===null)h+='<p class="sub" style="margin:0">Base DPE indisponible pour le moment.</p>';
   else if(!dpe.length)h+='<p class="sub" style="margin:0">Aucun DPE récent (depuis juillet 2021) trouvé à cette adresse.</p>';
   else{
