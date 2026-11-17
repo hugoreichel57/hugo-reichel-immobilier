@@ -152,6 +152,17 @@ function distToPolys(pt,polys){var best=Infinity;polys.forEach(function(rs){rs.f
 var SECT=['Nord','Nord-Est','Est','Sud-Est','Sud','Sud-Ouest','Ouest','Nord-Ouest'];
 function sectorOf(az){return Math.round(((az%360)+360)%360/45)%8}
 
+function toBL(features,P){
+  return features.map(function(f){var pl=polysOf(f.geometry).map(function(rs){return rs.map(function(r){return r.map(function(p){return [p[0],p[1]]})})});var L=projPolys(pl,P);return {f:f,polys:pl,L:L,area:L.reduce(function(s,rs){return s+polyArea(rs)},0),c:centroid(L)}}).filter(function(b){return b.area>2&&b.c});
+}
+function pickMain(bl,ptL){
+  var cont=bl.filter(function(b){return inMulti(ptL,b.L)});
+  if(cont.length)return cont.sort(function(a,b){return b.area-a.area})[0];
+  var solid=bl.filter(function(b){return !b.f.properties.construction_legere&&b.area>25});
+  var pool=solid.length?solid:bl;
+  return pool.slice().sort(function(a,b){return distToPolys(ptL,a.L)-distToPolys(ptL,b.L)})[0]||null;
+}
+
 /* ---------- Analyse ---------- */
 function analyse(lon,lat,label,banId){
   var my=++runId;
@@ -160,34 +171,35 @@ function analyse(lon,lat,label,banId){
   var P=makeProj(lon,lat);
   var pt=[lon,lat];
 
-  findParcel(lon,lat).then(function(parcel){
+  var d0=0.0004;
+  getBuildings(lon-d0*1.5,lat-d0,lon+d0*1.5,lat+d0).catch(function(){return[]}).then(function(near){
     if(my!==runId)return;
-    var parcelPolys=parcel?polysOf(parcel.geometry):[];
-    var bb=parcel?bbox(parcelPolys):[lon-0.0003,lat-0.0002,lon+0.0003,lat+0.0002];
-    var m=0.0001; // ~8-11 m de marge
-    return Promise.all([
-      Promise.resolve(parcel),
-      getBuildings(bb[0]-m,bb[1]-m,bb[2]+m,bb[3]+m).catch(function(){return[]}),
-      getDPE(lon,lat).catch(function(){return null})
-    ]);
+    // 1) Maison visée : celle qui contient le point, sinon la plus proche (hors abris légers)
+    var bl0=toBL(near,P), ptL=[0,0];
+    var main0=pickMain(bl0,ptL);
+    // 2) Parcelle : celle qui contient la maison (plus fiable que le point d'adresse, souvent sur le trottoir)
+    var q=main0?P.inv(main0.c):[lon,lat];
+    return findParcel(q[0],q[1]).then(function(parcel){
+      if(my!==runId)return;
+      var pp=parcel?polysOf(parcel.geometry):[];
+      var bb=parcel?bbox(pp):[lon-d0,lat-d0,lon+d0,lat+d0];
+      var m=0.0001;
+      return Promise.all([parcel,
+        getBuildings(Math.min(bb[0],lon)-m,Math.min(bb[1],lat)-m,Math.max(bb[2],lon)+m,Math.max(bb[3],lat)+m).catch(function(){return near}),
+        getDPE(lon,lat).catch(function(){return null}),
+        main0?main0.f.properties.cleabs:null]);
+    });
   }).then(function(res){
     if(!res||my!==runId)return;
-    var parcel=res[0], buildings=res[1], dpe=res[2];
-    var parcelPolys=parcel?polysOf(parcel.geometry):[];
-    var parcelL=projPolys(parcelPolys,P);
-    var ptL=P.f(pt);
-
-    // Bâtiments projetés
-    var bl=buildings.map(function(f){var pl=polysOf(f.geometry).map(function(rs){return rs.map(function(r){return r.map(function(p){return [p[0],p[1]]})})});var L=projPolys(pl,P);return {f:f,polys:pl,L:L,area:L.reduce(function(s,rs){return s+polyArea(rs)},0),c:centroid(L)}}).filter(function(b){return b.area>2&&b.c});
-    var inParcel=parcelL.length?bl.filter(function(b){return inMulti(b.c,parcelL)}):[];
-    var solid=inParcel.filter(function(b){return !b.f.properties.construction_legere});
-    var cand=solid.length?solid:inParcel;
+    var parcel=res[0], buildings=res[1], dpe=res[2], mainId=res[3];
+    var parcelL=projPolys(parcel?polysOf(parcel.geometry):[],P);
+    var ptL=[0,0];
+    var bl=toBL(buildings,P);
     var main=null;
-    var containing=bl.filter(function(b){return inMulti(ptL,b.L)});
-    if(containing.length) main=containing.sort(function(a,b){return b.area-a.area})[0];
-    else if(cand.length) main=cand.sort(function(a,b){return b.area-a.area})[0];
-    else if(bl.length) main=bl.slice().sort(function(a,b){return distToPolys(ptL,a.L)-distToPolys(ptL,b.L)})[0];
-
+    if(mainId)main=bl.filter(function(b){return b.f.properties.cleabs===mainId})[0]||null;
+    if(!main)main=pickMain(bl,ptL);
+    var inParcel=parcelL.length?bl.filter(function(b){return inMulti(b.c,parcelL)}):[];
+    if(main&&inParcel.indexOf(main)<0)inParcel.push(main);
     var expo=main?computeExpo(main,bl,parcelL,inParcel):null;
     render(label,banId,lon,lat,parcel,parcelL,main,inParcel,expo,dpe);
     drawMap(lon,lat,parcel,main,bl,expo);
@@ -317,7 +329,6 @@ function render(label,banId,lon,lat,parcel,parcelL,main,inParcel,expo,dpe){
       if(d.type_batiment)info.push(d.type_batiment);
       if(d.surface_habitable_logement)info.push('<b>'+fmt(d.surface_habitable_logement,1)+' m² habitables</b>');
       if(d.annee_construction)info.push('construit en '+d.annee_construction);
-      if(d.numero_etage_appartement!=null&&d.type_batiment==='appartement')info.push('étage '+d.numero_etage_appartement);
       if(d.logement_traversant===1||d.logement_traversant==='1')info.push('traversant');
       h+='<div class="dpe"><span class="tag" style="background:'+col+'">'+esc(d.etiquette_dpe||'?')+'</span>'+esc(d.adresse_ban||'')+(d.complement_adresse_logement?' — '+esc(d.complement_adresse_logement):'')+
          (ex?' <span class="exact">✓ même adresse</span>':'')+'<br>'+info.join(' · ')+
